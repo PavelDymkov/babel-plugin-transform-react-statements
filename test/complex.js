@@ -32,4 +32,43 @@ describe("Complex tests", () => {
 
         assert.isTrue(isEquil(input, output));
     });
+    it("should transform if-statement and for-statement in switch-statement", () => {
+        let input = `
+            props => <div>
+                <Switch value={x}>
+                    <Case value={1}>
+                        <If false={false}>
+                            <div> Text 1 </div>
+                        </If>
+                    </Case>
+                    <Case value={2}>
+                        <For each="x" in={some}>
+                            <div> {x} </div>
+                        </For>
+                    </Case>
+                </Switch>
+            </div>;
+        `;
+        let output = `
+            var _this = this;
+
+            props => <div>
+                {
+                    function (value, case1, case2) {
+                        switch (value) {
+                            case case1:
+                                return !false && <div> Text 1 </div>;
+
+                            case case2:
+                                return Array.prototype.map.call(some, function (x) {
+                                    return <div> {x} </div>;
+                                }, this);
+                        }
+                    }.call(_this, 1, 2)
+                }
+</div>;
+        `;
+
+        assert.isTrue(isEquil(input, output));
+    });
 });
