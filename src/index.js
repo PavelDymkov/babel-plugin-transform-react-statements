@@ -4,40 +4,31 @@ import transformSwitchStatement from "./switch-statement.js";
 
 import {
     getTagName
-} from "./helper.js";
+} from "./common-lib.js";
 
 
-export default function({ types: t }) {
+export default function() {
     return {
         inherits: require("babel-plugin-syntax-jsx"),
 
         visitor: {
             JSXElement(path, state) {
-                let tagName = getTagName(t, path);
+                let tagName = getTagName(path);
 
                 switch (tagName) {
                     case "If":
-                        log("If")
-                        transformIfStatement(t, path, state.opts);
+                        transformIfStatement(path, state.opts);
                         break;
 
                     case "For":
-                        log("For")
-                        transformForStatement(t, path, state.opts);
+                        transformForStatement(path, state.opts);
                         break;
 
                     case "Switch":
-                        log("Switch")
-                        transformSwitchStatement(t, path, state.opts);
+                        transformSwitchStatement(path, state.opts);
                         break;
                 }
             }
         }
     };
-};
-
-function log(...args) {
-    return
-    console.log(">>>>>>>>>>>>>>>>>>>>>");
-    console.log(...args);
 }

@@ -25,7 +25,7 @@ describe("Complex tests", () => {
                             case case1:
                                 return <div> Text 1 </div>;
                         }
-                    }.call(_this, 1)
+                    }.call(_this, x, 1)
                 }
             </div>;
         `;
@@ -64,7 +64,7 @@ describe("Complex tests", () => {
                                     return <div> {x} </div>;
                                 }, this);
                         }
-                    }.call(_this, 1, 2)
+                    }.call(_this, x, 1, 2)
                 }
 </div>;
         `;

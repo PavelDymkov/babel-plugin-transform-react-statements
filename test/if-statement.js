@@ -53,4 +53,29 @@ describe("If statement", () => {
 
         assert.isTrue(isEquil(input, output));
     });
+
+    it ("should transform", () => {
+        let input = `
+            props => <div>
+                <div> test </div>
+
+                <If true={true}>
+                    <div> test </div>
+                </If>
+                
+                <div> test </div>
+            </div>;
+        `;
+        let output = `
+            props => <div>
+                <div> test </div>
+
+                {true && <div> test </div>}
+                
+                <div> test </div>
+            </div>;
+        `;
+
+        assert.isTrue(isEquil(input, output));
+    });
 });

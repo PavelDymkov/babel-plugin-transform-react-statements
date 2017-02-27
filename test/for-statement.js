@@ -75,4 +75,50 @@ describe("For statement", () => {
 
         assert.isTrue(isEquil(input, output));
     });
+
+    it("should transform key-is without each", () => {
+        let input = `
+            props => <div>
+                <For in={array} key-is="id">
+                    <div />
+                </For>
+            </div>;
+        `;
+        let output = `
+            var _this = this;
+
+            props => <div>
+                {
+                    Array.prototype.map.call(array, function (value) {
+                        return <div key={value.id} {...value} />;
+                    }, _this)
+                }
+            </div>;
+        `;
+
+        assert.isTrue(isEquil(input, output));
+    });
+
+    it("should transform key-is with each", () => {
+        let input = `
+            props => <div>
+                <For each="item" in={array} key-is="id">
+                    <div>{ item.value }</div>
+                </For>
+            </div>;
+        `;
+        let output = `
+            var _this = this;
+
+            props => <div>
+                {
+                    Array.prototype.map.call(array, function (item) {
+                        return <div key={item.id}>{item.value}</div>;
+                    }, _this)
+                }
+            </div>;
+        `;
+
+        assert.isTrue(isEquil(input, output));
+    });
 });

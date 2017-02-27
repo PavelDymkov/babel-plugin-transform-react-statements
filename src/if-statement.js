@@ -1,8 +1,9 @@
+const t = require("babel-types");
 import {
     getAttributes,
-    appendStatements,
-    notNull
-} from "./helper.js";
+    appendExpressions,
+    getChildren
+} from "./common-lib.js";
 
 
 const errors = {
@@ -13,8 +14,8 @@ const errors = {
 };
 
 
-export default function (t, path, options) {
-    let attributes = getAttributes(t, path);
+export default function (path, options) {
+    let attributes = getAttributes(path);
 
     if (attributes.length != 1)
         throw new Error(errors.ATTRIBUTES_LENGTH);
@@ -36,31 +37,23 @@ export default function (t, path, options) {
         conditionExpression = t.unaryExpression("!", conditionExpression);
     }
 
-    let ifStatements = path.get("children")
-        .map(toIfStatement)
-        .filter(notNull);
+    let expressions = getChildren(path).map(toExpression, conditionExpression);
 
-    appendStatements(t, path, ifStatements);
+    appendExpressions(expressions, path, options);
 
+}
 
-
-    function toIfStatement(path) {
-        let rVal = null;
-
-        if (t.isJSXElement(path)) {
-            rVal = path.node;
-        }
-        else
-        if (t.isJSXExpressionContainer(path)) {
-            rVal = path.get("expression").node;
-        }
-        else return null;
-
-        let logicalExpression = t.logicalExpression("&&", conditionExpression, rVal);
-
-        return t.jSXExpressionContainer(logicalExpression);
+function toExpression(path) {
+    if (path.isJSXElement()) {
+        return t.logicalExpression("&&", this, path.node);
     }
-};
+
+    if (path.isJSXExpressionContainer()) {
+        return t.logicalExpression("&&", this, path.get("expression").node);
+    }
+
+    throw new Error(path.type);
+}
 
 function log(...args) {
     console.log(">>>>>>>>>>>>>>>>>>>>>");

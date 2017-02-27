@@ -34,7 +34,7 @@ describe("Switch statement", () => {
                         }
 
                         return <div> default </div>;
-                    }.call(_this, 1, "lol")
+                    }.call(_this, x, 1, "lol")
                 }
             </div>;
         `;

@@ -1,32 +1,34 @@
+const t = require("babel-types");
 import {
     getAttribute,
-    getAttributes,
     getAttributeName,
     getTagName,
-    appendStatements
-} from "./helper.js";
+    combineElements,
+    appendExpressions,
+    getChildren,
+    getChildNodes
+} from "./common-lib.js";
 
 
 const errors = {
     NO_SWITCH_VALUE: "NO_SWITCH_VALUE",
-    NO_CASE_VALUE: "NO_CASE_VALUE"
+    VALUE_NOT_EXPRESSION: "VALUE_NOT_EXPRESSION",
+    NO_CASE_VALUE: "NO_CASE_VALUE",
+    INVALID_CHILD_NODE: "INVALID_CHILD_NODE"
 };
 
 
-export default function (t, path, options) {
-    let switchValue = getAttribute("value", t, path);
-
-    if (!switchValue)
-        throw new Error(errors.NO_SWITCH_VALUE);
-
+export default function (path, options) {
+    // debugger
+    let valueExpression = getValueExpression(path);
     let switchBody = { cases: [], defaultStatement: null };
 
-    path.get("children").forEach(getCases);
+    getChildren(path).forEach(getCases, {switchBody, options});
 
-    let argsNames = getArgsNames(t, switchBody.cases.length);
-    let args = getArgs(t, switchBody.cases);
+    let argsNames = getArgsNames(switchBody.cases.length);
+    let args = getArgs(valueExpression, switchBody.cases);
 
-    let cases = switchBody.cases.map(toSwitchCase);
+    let cases = switchBody.cases.map(toSwitchCase, argsNames);
     let switchStatement = t.switchStatement(argsNames[0], cases);
     let statements = [switchStatement];
 
@@ -39,58 +41,73 @@ export default function (t, path, options) {
     let memberExpression = t.memberExpression(fn, t.identifier("call"));
     let callExpression = t.callExpression(memberExpression, args);
 
-    if (t.isJSXElement(path.parentPath)) {
-        let expressionContainer = t.jSXExpressionContainer(callExpression);
+    return appendExpressions([callExpression], path, options);
+}
 
-        path.replaceWith(expressionContainer);
-    } else {
-        path.replaceWith(callExpression);
+function getValueExpression(path) {
+    let valueAttribute = getAttribute(path, "value");
+
+    if (!valueAttribute)
+        throw new Error(errors.NO_SWITCH_VALUE);
+
+    let valueExpression = valueAttribute.get("value");
+
+    if (!valueExpression.isJSXExpressionContainer())
+        throw new Error(errors.VALUE_NOT_EXPRESSION);
+
+    return valueExpression.get("expression").node;
+}
+
+function getCases(childPath) {
+    let {switchBody, options} = this;
+    let tagName = getTagName(childPath);
+
+    if (tagName == "Case") {
+        let valueAttribute = getAttribute(childPath, "value");
+
+        if (!valueAttribute)
+            throw new Error(errors.NO_CASE_VALUE);
+
+        let valueSource = valueAttribute.get("value");
+
+        let value =
+            valueSource.isJSXExpressionContainer() ?
+            valueSource.get("expression").node :
+            valueSource;
+
+        let children = getChildNodes(childPath);
+        let childNode = combineElements(children);
+        let statement = [t.returnStatement(childNode)];
+
+        switchBody.cases.push({ value, statement });
     }
-    
+    else
+    if (tagName == "Default") {
+        let childNode = combineElements(getChildNodes(childPath), options);
 
-
-    function getCases(childPath) {
-        let tagName = getTagName(t, childPath);
-
-        if (!tagName) return;
-
-        if (tagName == "Case") {
-            let valueAttribute = getAttribute("value", t, childPath);
-
-            if (!valueAttribute)
-                throw new Error(errors.NO_CASE_VALUE);
-
-            let valueSource = valueAttribute.get("value");
-
-            let value =
-                t.isJSXExpressionContainer(valueSource) ?
-                valueSource.get("expression").node :
-                valueSource;
-
-            let childNode = childPath.get("children").reduce(getJSXElement, null);
-            let statement = [t.returnStatement(childNode)];
-
-            switchBody.cases.push({ value, statement });
-        } else if (tagName == "Default") {
-            let childNode = childPath.get("children").reduce(getJSXElement, null);
-
-            switchBody.defaultStatement = t.returnStatement(childNode);
-        }
+        switchBody.defaultStatement = t.returnStatement(childNode);
     }
-
-    function getJSXElement(element, current) {
-        if (element) return element;
-
-        return t.isJSXElement(current) || t.isJSXExpressionContainer(current) ? current.node : null;
+    else {
+        throw new Error(errors.INVALID_CHILD_NODE);
     }
+}
 
-    function toSwitchCase({statement}, index) {
-        return t.switchCase(argsNames[index + 1], statement);
-    }
-};
+function getJSXElement(element, current) {
+    if (element) return element;
+
+    let isCorrectType = current.isJSXElement() || current.isJSXExpressionContainer();
+
+    return isCorrectType ? current.node : null;
+}
+
+function toSwitchCase({statement}, index) {
+    let argsNames = this;
+
+    return t.switchCase(argsNames[index + 1], statement);
+}
 
 
-function getArgsNames(t, count) {
+function getArgsNames(count) {
     let args = [t.identifier("value")];
 
     for (let i = 1; i <= count; i++)
@@ -99,17 +116,12 @@ function getArgsNames(t, count) {
     return args;
 }
 
-function getArgs(t, cases) {
-    return cases.reduce(toArgs, [t.thisExpression()]);
+function getArgs(valueArgument, cases) {
+    return cases.reduce(toArgs, [t.thisExpression(), valueArgument]);
 }
 
 function toArgs(args, {value}) {
     args.push(value);
 
     return args;
-}
-
-function log(...args) {
-    console.log(">>>>>>>>>>>>>>>>>>>>>");
-    console.log(...args);
 }

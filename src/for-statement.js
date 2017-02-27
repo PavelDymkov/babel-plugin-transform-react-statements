@@ -1,9 +1,11 @@
+const t = require("babel-types");
 import {
     getAttributeName,
     getAttributes,
-    appendStatements,
-    notNull
-} from "./helper.js";
+    appendExpressions,
+    getChildren,
+    getTagName
+} from "./common-lib.js";
 
 
 const errors = {
@@ -12,108 +14,102 @@ const errors = {
 };
 
 
-export default function (t, path, options) {
+export default function (path, options) {
     let parameters = {
         itemName: null,
-        iterable: null
+        iterable: null,
+        keyIs: null
     };
-    let attributes = getAttributes(t, path);
+    let attributes = getAttributes(path);
 
-    attributes.reduce(setParameters, parameters);
+    attributes.forEach(setParameters, parameters);
 
     if (!parameters.iterable)
         throw new Error(errors.IN_ATTR_MISSING);
 
-    let forStatements = path.get("children")
-        .map(toForStatement)
-        .filter(notNull);
+    let expressions = getChildren(path).map(toExpression, parameters);
 
-    appendStatements(t, path, forStatements);
+    appendExpressions(expressions, path, options);
+}
 
+function toExpression(path) {
+    if (!path.isJSXElement())
+        return null;
 
+    let parameters = this;
 
-    function toForStatement(path) {
-        if (!t.isJSXElement(path))
-            return null;
+    let argName = t.identifier(parameters.itemName || "value");
+    let argNames = [argName];
 
-        let argName = t.identifier(parameters.itemName || "value");
-        let args = [argName];
+    if (parameters.keyIs) {
+        let name = t.jSXIdentifier("key");
+        let value = t.memberExpression(argName, t.identifier(parameters.keyIs));
+        let attribute = t.jSXAttribute(name, t.jSXExpressionContainer(value));
 
-        if (!parameters.itemName) {
-            if (!t.isJSXElement(path))
-                throw new Error(errors.CHILD_MUST_BE_AN_ELEMENT);
+        addAttribute(path, attribute);
+    }
 
-            let openingElement = path.get("openingElement");
-            let attributes = openingElement.get("attributes");
-            let spreadIsAlreadyExists = attributes.some(isAlreadyExists, argName);
+    if (!parameters.itemName) {
+        let attributes = getAttributes(path);
 
-            if (!spreadIsAlreadyExists) {
-                let name = openingElement.node.name;
-                let spread = t.jSXSpreadAttribute(argName);
+        if (!attributes.some(isAlreadyExists, argName)) {
+            let spread = t.jSXSpreadAttribute(argName);
 
-                attributes.push(spread);
-
-                let selfClosing = openingElement.node.selfClosing;
-
-                openingElement.replaceWith(t.jSXOpeningElement(name, attributes, selfClosing)); 
-            }
-        }
-
-        let returnStatement = t.returnStatement(path.node);
-        let body = t.blockStatement([returnStatement]);
-        let fn = t.functionExpression(null, args, body);
-        let expression = createArrayMapCallExpression(fn);
-
-        return t.jSXExpressionContainer(expression);
-
-
-        function isAlreadyExists(attribute) {
-            if (!t.isJSXSpreadAttribute(attribute))
-                return false;
-
-            let identifier = attribute.get("argument");
-
-            if (!t.isIdentifier(identifier))
-                return false;
-
-            return identifier.node.name == this.name;
+            addAttribute(path, spread);
         }
     }
 
-    function createArrayMapCallExpression(fn) {
-        let callee = "Array.prototype.map.call"
-            .split(".")
-            .reduce(toMemberExpression);
-        let args = [parameters.iterable, fn, t.thisExpression()];
+    let returnStatement = t.returnStatement(path.node);
+    let body = t.blockStatement([returnStatement]);
+    let fn = t.functionExpression(null, argNames, body);
 
-        return t.callExpression(callee, args);
+    return createArrayMapCallExpression(fn, parameters);
+}
 
+function addAttribute(path, attribute) {
+    let openingElement = path.get("openingElement");
+    let name = openingElement.node.name;
+    let attributes = openingElement.get("attributes").map(path => path.node);
+    let selfClosing = openingElement.node.selfClosing;
+
+    attributes.push(attribute);
+
+    openingElement.replaceWith(t.jSXOpeningElement(name, attributes, selfClosing)); 
+}
+
+function createArrayMapCallExpression(fn, parameters) {
+    let callee = "Array.prototype.map.call"
+        .split(".")
+        .reduce(toMemberExpression);
+    let args = [parameters.iterable, fn, t.thisExpression()];
+
+    return t.callExpression(callee, args);
+
+}
+
+function toMemberExpression(expression, item) {
+    if (typeof expression == "string") {
+        return t.memberExpression(t.identifier(expression), t.identifier(item));
     }
 
-    function toMemberExpression(expression, item) {
-        if (typeof expression == "string") {
-            return t.memberExpression(t.identifier(expression), t.identifier(item));
-        }
+    return t.memberExpression(expression, t.identifier(item));
+}
 
-        return t.memberExpression(expression, t.identifier(item));
-    }
-};
-
-
-function setParameters(parameters, attribute) {
+function setParameters(attribute) {
     let attributeName = getAttributeName(attribute);
 
     switch (attributeName) {
         case "each":
-            parameters.itemName = getItemName(attribute);
+            this.itemName = getItemName(attribute);
             break;
 
         case "in":
-            parameters.iterable = getIterable(attribute);
+            this.iterable = getIterable(attribute);
             break;
-    }
 
-    return parameters;
+        case "key-is":
+            this.keyIs = getKeyValue(attribute);
+    }
 }
 
 function getItemName(attribute) {
@@ -121,7 +117,28 @@ function getItemName(attribute) {
 }
 
 function getIterable(attribute) {
+    // if !expression???
     return attribute.get("value").node.expression;
+}
+
+function getKeyValue(attribute) {
+    return attribute.get("value").node.value;
+}
+
+function isAlreadyExists(attribute) {
+    if (!attribute.isJSXSpreadAttribute())
+        return false;
+
+    let identifier = attribute.get("argument");
+
+    if (!identifier.isIdentifier())
+        return false;
+
+    return identifier.node.name == this.name;
+}
+
+function isLoop(path) {
+    return getTagName(path) == "For";
 }
 
 function log(...args) {
