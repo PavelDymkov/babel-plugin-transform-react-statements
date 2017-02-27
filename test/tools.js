@@ -10,17 +10,7 @@ const defaultOptions = {};
 module.exports = function isEquil(input, expected, options) {
     babelOptions.plugins[0][1] = options || defaultOptions;
 
-    let output;
-    try {
-        output = babel.transform(input, babelOptions).code;
-    } catch (error) {
-        console.log(">>>>>ERROR!!!!\n", error.message);
-        return true;
-    }
+    let output = babel.transform(input, babelOptions).code;
 
-    if (output.replace(spaces, "") != expected.replace(spaces, ""))
-        console.log(output);
-
-    return true;
     return output.replace(spaces, "") == expected.replace(spaces, "");
 };

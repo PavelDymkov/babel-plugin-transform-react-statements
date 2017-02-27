@@ -1,10 +1,10 @@
-const t = require("babel-types");
 import {
     getAttributes,
     appendExpressions,
     getChildren
 } from "./common-lib.js";
 
+const t = require("babel-types");
 
 const errors = {
     ATTRIBUTES_LENGTH: "IF__ATTRIBUTES_LENGTH",
@@ -53,9 +53,4 @@ function toExpression(path) {
     }
 
     throw new Error(path.type);
-}
-
-function log(...args) {
-    console.log(">>>>>>>>>>>>>>>>>>>>>");
-    console.log(...args);
 }

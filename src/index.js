@@ -2,9 +2,7 @@ import transformIfStatement from "./if-statement.js";
 import transformForStatement from "./for-statement.js";
 import transformSwitchStatement from "./switch-statement.js";
 
-import {
-    getTagName
-} from "./common-lib.js";
+import { getTagName } from "./common-lib.js";
 
 
 export default function() {

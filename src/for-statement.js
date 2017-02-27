@@ -1,4 +1,3 @@
-const t = require("babel-types");
 import {
     getAttributeName,
     getAttributes,
@@ -7,10 +6,14 @@ import {
     getTagName
 } from "./common-lib.js";
 
+const t = require("babel-types");
 
 const errors = {
     IN_ATTR_MISSING: "IN_ATTR_MISSING",
-    CHILD_MUST_BE_AN_ELEMENT: "CHILD_MUST_BE_AN_ELEMENT"
+    CHILD_MUST_BE_AN_ELEMENT: "CHILD_MUST_BE_AN_ELEMENT",
+    EACH_ATTR_NOT_STRING: "EACH_ATTR_NOT_STRING",
+    IN_ATTR_NOT_EXPRESSION: "IN_ATTR_NOT_EXPRESSION",
+    KEY_ATTR_NOT_STRING: "KEY_ATTR_NOT_STRING"
 };
 
 
@@ -113,16 +116,30 @@ function setParameters(attribute) {
 }
 
 function getItemName(attribute) {
-    return attribute.get("value").node.value;
+    let valueNode = attribute.get("value").node;
+
+    if (!t.isStringLiteral(valueNode))
+        throw new Error(errors.EACH_ATTR_NOT_STRING);
+
+    return valueNode.value;
 }
 
 function getIterable(attribute) {
-    // if !expression???
-    return attribute.get("value").node.expression;
+    let valueNode = attribute.get("value").node;
+
+    if (!t.isJSXExpressionContainer(valueNode))
+        throw new Error(errors.IN_ATTR_NOT_EXPRESSION);
+
+    return valueNode.expression;
 }
 
 function getKeyValue(attribute) {
-    return attribute.get("value").node.value;
+    let valueNode = attribute.get("value").node;
+
+    if (!t.isStringLiteral(valueNode))
+        throw new Error(errors.KEY_ATTR_NOT_STRING);
+
+    return valueNode.value;
 }
 
 function isAlreadyExists(attribute) {
@@ -139,9 +156,4 @@ function isAlreadyExists(attribute) {
 
 function isLoop(path) {
     return getTagName(path) == "For";
-}
-
-function log(...args) {
-    console.log(">>>>>>>>>>>>>>>>>>>>>");
-    console.log(...args);
 }

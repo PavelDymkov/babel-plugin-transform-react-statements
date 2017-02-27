@@ -1,4 +1,3 @@
-const t = require("babel-types");
 import {
     getAttribute,
     getAttributeName,
@@ -9,6 +8,7 @@ import {
     getChildNodes
 } from "./common-lib.js";
 
+const t = require("babel-types");
 
 const errors = {
     NO_SWITCH_VALUE: "NO_SWITCH_VALUE",
@@ -19,7 +19,6 @@ const errors = {
 
 
 export default function (path, options) {
-    // debugger
     let valueExpression = getValueExpression(path);
     let switchBody = { cases: [], defaultStatement: null };
 

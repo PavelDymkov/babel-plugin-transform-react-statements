@@ -81,7 +81,6 @@ export function combineElements(elements, options) {
     let wrapper = options.wrapper || "<div />";
 
     try {
-        debugger
         let {ast} = babel.transform(wrapper, { plugins: ["syntax-jsx"] });
         let [expressionStatement] = ast.program.body;
 
@@ -117,6 +116,7 @@ export function getChildNodes(path) {
 function notEmptyText(path) {
     return path.isJSXText() ? path.node.value.trim() != "" : true;
 }
+
 
 export function toNode(path) {
     return path.node;
