@@ -1,5 +1,4 @@
 import {
-    getAttributes,
     appendExpressions,
     getChildren
 } from "./common-lib.js";
@@ -15,42 +14,45 @@ const errors = {
 
 
 export default function (path, options) {
-    let attributes = getAttributes(path);
+    let {node} = path;
+    let {attributes} = node.openingElement;
 
     if (attributes.length != 1)
         throw new Error(errors.ATTRIBUTES_LENGTH);
 
     let [attribute] = attributes;
-    let type = attribute.get("name").node.name;
+    let {name: type} = attribute.name;
 
     if (type != "true" && type != "false")
         throw new Error(errors.INVALID_ATTRIBUTE_NAME);
 
-    let expressionContainer = attribute.get("value");
+    let {value: expressionContainer} = attribute;
 
     if (!t.isJSXExpressionContainer(expressionContainer))
         throw new Error(errors.INVALID_ATTRIBUTE_VALUE);
 
-    let conditionExpression = expressionContainer.get("expression").node;
+    let {expression: conditionExpression} = expressionContainer;
 
     if (type == "false") {
         conditionExpression = t.unaryExpression("!", conditionExpression);
     }
 
-    let expressions = getChildren(path).map(toExpression, conditionExpression);
+    let expressions = getChildren(node).map(toExpression, conditionExpression);
 
     appendExpressions(expressions, path, options);
 
 }
 
-function toExpression(path) {
-    if (path.isJSXElement()) {
-        return t.logicalExpression("&&", this, path.node);
+function toExpression(node) {
+    if (t.isJSXElement(node)) {
+        return t.logicalExpression("&&", this, node);
     }
 
-    if (path.isJSXExpressionContainer()) {
-        return t.logicalExpression("&&", this, path.get("expression").node);
+    if (t.isJSXExpressionContainer(node)) {
+        return t.logicalExpression("&&", this, node.expression);
     }
 
-    throw new Error(path.type);
+    if (t.isJSXText(node)) {
+        return t.logicalExpression("&&", this, t.stringLiteral(node.value));
+    }
 }

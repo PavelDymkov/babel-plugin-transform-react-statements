@@ -1,9 +1,9 @@
 import {
     getAttributeName,
     getAttributes,
+    combineElements,
     appendExpressions,
-    getChildren,
-    getTagName
+    getChildren
 } from "./common-lib.js";
 
 const t = require("babel-types");
@@ -19,72 +19,71 @@ const errors = {
 
 export default function (path, options) {
     let parameters = {
-        itemName: null,
-        iterable: null,
+        itemIdentifier: null,
+        iterableExpression: null,
         keyIs: null
     };
-    let attributes = getAttributes(path);
+
+    let {node} = path;
+    let {attributes} = node.openingElement;
 
     attributes.forEach(setParameters, parameters);
 
-    if (!parameters.iterable)
+    if (!parameters.iterableExpression)
         throw new Error(errors.IN_ATTR_MISSING);
 
-    let expressions = getChildren(path).map(toExpression, parameters);
+    let iterableElement = combineElements(getChildren(node), options);
 
-    appendExpressions(expressions, path, options);
-}
+    let itemIdentifier = t.identifier(parameters.itemIdentifier || "value");
+    let argNames = [itemIdentifier];
 
-function toExpression(path) {
-    if (!path.isJSXElement())
-        return null;
+    if (t.isJSXElement(iterableElement)) {
+        if (parameters.keyIs) {
+            let attributeName = t.jSXIdentifier("key");
+            let attributeValue = t.memberExpression(itemIdentifier, t.identifier(parameters.keyIs));
+            let attribute = t.jSXAttribute(attributeName, t.jSXExpressionContainer(attributeValue));
 
-    let parameters = this;
+            iterableElement.openingElement.attributes.push(attribute);
+        }
 
-    let argName = t.identifier(parameters.itemName || "value");
-    let argNames = [argName];
+        if (!parameters.itemIdentifier) {
+            let {attributes} = iterableElement.openingElement;
 
-    if (parameters.keyIs) {
-        let name = t.jSXIdentifier("key");
-        let value = t.memberExpression(argName, t.identifier(parameters.keyIs));
-        let attribute = t.jSXAttribute(name, t.jSXExpressionContainer(value));
+            if (!attributes.some(isAlreadyExists, itemIdentifier)) {
+                let spread = t.jSXSpreadAttribute(itemIdentifier);
 
-        addAttribute(path, attribute);
-    }
-
-    if (!parameters.itemName) {
-        let attributes = getAttributes(path);
-
-        if (!attributes.some(isAlreadyExists, argName)) {
-            let spread = t.jSXSpreadAttribute(argName);
-
-            addAttribute(path, spread);
+                iterableElement.openingElement.attributes.push(spread);
+            }
         }
     }
+    else
+    if (t.isJSXExpressionContainer(iterableElement)) {
+        iterableElement = iterableElement.expression;
+    }
+    else
+    if (t.isJSXEmptyExpression(iterableElement)) {
+        iterableElement = t.nullLiteral();
+    }
+    else
+    if (t.isJSXText(iterableElement)) {
+        iterableElement = t.stringLiteral(iterableElement.value);
+    }
 
-    let returnStatement = t.returnStatement(path.node);
+    let returnStatement = t.returnStatement(iterableElement);
     let body = t.blockStatement([returnStatement]);
     let fn = t.functionExpression(null, argNames, body);
 
-    return createArrayMapCallExpression(fn, parameters);
-}
+    let expressions = [createArrayMapCallExpression(fn, parameters)];
 
-function addAttribute(path, attribute) {
-    let openingElement = path.get("openingElement");
-    let name = openingElement.node.name;
-    let attributes = openingElement.get("attributes").map(path => path.node);
-    let selfClosing = openingElement.node.selfClosing;
+    appendExpressions(expressions, path, options);
+};
 
-    attributes.push(attribute);
-
-    openingElement.replaceWith(t.jSXOpeningElement(name, attributes, selfClosing)); 
-}
 
 function createArrayMapCallExpression(fn, parameters) {
     let callee = "Array.prototype.map.call"
         .split(".")
         .reduce(toMemberExpression);
-    let args = [parameters.iterable, fn, t.thisExpression()];
+    let args = [parameters.iterableExpression, fn, t.thisExpression()];
 
     return t.callExpression(callee, args);
 
@@ -99,15 +98,15 @@ function toMemberExpression(expression, item) {
 }
 
 function setParameters(attribute) {
-    let attributeName = getAttributeName(attribute);
+    let {name: attributeName} = attribute.name;
 
     switch (attributeName) {
         case "each":
-            this.itemName = getItemName(attribute);
+            this.itemIdentifier = getItemIdentifier(attribute);
             break;
 
         case "in":
-            this.iterable = getIterable(attribute);
+            this.iterableExpression = getIterableExpression(attribute);
             break;
 
         case "key-is":
@@ -115,27 +114,21 @@ function setParameters(attribute) {
     }
 }
 
-function getItemName(attribute) {
-    let valueNode = attribute.get("value").node;
-
+function getItemIdentifier({value: valueNode}) {
     if (!t.isStringLiteral(valueNode))
         throw new Error(errors.EACH_ATTR_NOT_STRING);
 
     return valueNode.value;
 }
 
-function getIterable(attribute) {
-    let valueNode = attribute.get("value").node;
-
+function getIterableExpression({value: valueNode}) {
     if (!t.isJSXExpressionContainer(valueNode))
         throw new Error(errors.IN_ATTR_NOT_EXPRESSION);
 
     return valueNode.expression;
 }
 
-function getKeyValue(attribute) {
-    let valueNode = attribute.get("value").node;
-
+function getKeyValue({value: valueNode}) {
     if (!t.isStringLiteral(valueNode))
         throw new Error(errors.KEY_ATTR_NOT_STRING);
 
@@ -143,17 +136,13 @@ function getKeyValue(attribute) {
 }
 
 function isAlreadyExists(attribute) {
-    if (!attribute.isJSXSpreadAttribute())
+    if (!t.isJSXSpreadAttribute(attribute))
         return false;
 
-    let identifier = attribute.get("argument");
+    let {argument: identifier} = attribute;
 
-    if (!identifier.isIdentifier())
+    if (!t.isIdentifier(identifier))
         return false;
 
-    return identifier.node.name == this.name;
-}
-
-function isLoop(path) {
-    return getTagName(path) == "For";
+    return identifier.name == this.name;
 }

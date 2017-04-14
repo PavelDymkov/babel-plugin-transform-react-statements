@@ -105,17 +105,40 @@ export function combineElements(elements, options) {
     }
 }
 
+export function getChildren(node) {
+    return node.children.reduce(toValidChildNodes, []);
+}
+
+function toValidChildNodes(children, node) {
+    if (t.isJSXEmptyExpression(node))
+        return children;
+
+    if (t.isJSXText(node)) {
+        let value = node.value.trim();
+
+        if (value) {
+            children.push(t.jSXText(value));
+        }
+    } else {
+        children.push(node)
+    }
+
+    return children;
+}
+
+/*
 export function getChildren(path) {
     return path.get("children").filter(notEmptyText);
 }
-
+*/
+/*
 export function getChildNodes(path) {
     return path.get("children").filter(notEmptyText).map(toNode);
 }
 
 function notEmptyText(path) {
     return path.isJSXText() ? path.node.value.trim() != "" : true;
-}
+}*/
 
 
 export function toNode(path) {

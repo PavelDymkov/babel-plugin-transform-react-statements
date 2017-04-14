@@ -1,10 +1,6 @@
 import {
-    getAttribute,
-    getAttributeName,
-    getTagName,
     combineElements,
     appendExpressions,
-    getChildren,
     getChildNodes
 } from "./common-lib.js";
 
@@ -19,10 +15,11 @@ const errors = {
 
 
 export default function (path, options) {
-    let valueExpression = getValueExpression(path);
+    let {node} = path;
+    let valueExpression = getValueExpression(node);
     let switchBody = { cases: [], defaultStatement: null };
 
-    getChildren(path).forEach(getCases, {switchBody, options});
+    node.children.forEach(getCases, {switchBody, options});
 
     let argsNames = getArgsNames(switchBody.cases.length);
     let args = getArgs(valueExpression, switchBody.cases);
@@ -43,52 +40,68 @@ export default function (path, options) {
     return appendExpressions([callExpression], path, options);
 }
 
-function getValueExpression(path) {
-    let valueAttribute = getAttribute(path, "value");
+function getValueExpression(node) {
+    let attribute = getValueAttribute(node);
 
-    if (!valueAttribute)
+    if (!attribute)
         throw new Error(errors.NO_SWITCH_VALUE);
 
-    let valueExpression = valueAttribute.get("value");
+    let {value: valueExpression} = attribute;
 
-    if (!valueExpression.isJSXExpressionContainer())
+    if (!t.isJSXExpressionContainer(valueExpression))
         throw new Error(errors.VALUE_NOT_EXPRESSION);
 
-    return valueExpression.get("expression").node;
+    return valueExpression.expression;
 }
 
-function getCases(childPath) {
+function getCases(childNode) {
+    if (!t.isJSXElement(childNode))
+        throw new Error(errors.INVALID_CHILD_NODE);
+
     let {switchBody, options} = this;
-    let tagName = getTagName(childPath);
+
+    let {name: tagName} = childNode.openingElement.name;
 
     if (tagName == "Case") {
-        let valueAttribute = getAttribute(childPath, "value");
+        let valueAttribute = getValueAttribute(childNode);
 
         if (!valueAttribute)
             throw new Error(errors.NO_CASE_VALUE);
 
-        let valueSource = valueAttribute.get("value");
+        let {value: valueSource} = valueAttribute;
 
         let value =
             valueSource.isJSXExpressionContainer() ?
-            valueSource.get("expression").node :
-            valueSource;
+                valueSource.expression : valueSource;
 
-        let children = getChildNodes(childPath);
-        let childNode = combineElements(children);
-        let statement = [t.returnStatement(childNode)];
+        let {children} = childNode;
+        let statement = [t.returnStatement(combineElements(children))];
 
         switchBody.cases.push({ value, statement });
     }
     else
     if (tagName == "Default") {
-        let childNode = combineElements(getChildNodes(childPath), options);
+        let {children} = childNode;
 
-        switchBody.defaultStatement = t.returnStatement(childNode);
+        switchBody.defaultStatement =
+            t.returnStatement(combineElements(children, options));
     }
     else {
         throw new Error(errors.INVALID_CHILD_NODE);
     }
+}
+
+function getValueAttribute(jsxNode) {
+    let {attributes} = jsxNode.openingElement;
+
+    for (let i = 0, lim = attributes.length; i < lim; i++) {
+        let attribute = attributes[i];
+
+        if (attribute.name.name == "value")
+            return attribute;
+    }
+
+    return null;
 }
 
 function getJSXElement(element, current) {

@@ -4,12 +4,33 @@ const babelOptions = {
 };
 
 
-let input = `
-let x = <If true={1}>
-    <div> foo </div>
-    <div> bar </div>
-</If>
+let input;
+
+input = `
+let x = <div>
+    <Switch value={x}>
+        <Case value={true}>
+                <div>text</div>
+        </Case>
+    </Switch>
+</div>
 `;
+
+/*input = `
+let x = <div>
+    <For each="item" in={items}>
+        { this.method(item) }
+    </For>
+</div>
+`;*/
+
+/*input = `
+let x = <div>
+    <If true={true}>
+        text
+    </If>
+</div>
+`;*/
 
 // babel.transform(input, babelOptions).code;
 console.log( babel.transform(input, babelOptions).code );
