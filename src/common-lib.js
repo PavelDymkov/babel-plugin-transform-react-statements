@@ -75,6 +75,11 @@ function toJSXExpression(expression) {
 }
 
 
+export function toNode(path) {
+    return path.node;
+}
+
+
 export function combineElements(elements, options) {
     if (elements.length == 1) return elements[0];
 
@@ -117,30 +122,13 @@ function toValidChildNodes(children, node) {
         let value = node.value.trim();
 
         if (value) {
-            children.push(t.jSXText(value));
+            let textNode = t.jSXText(value);
+
+            children.push(textNode);
         }
     } else {
         children.push(node)
     }
 
     return children;
-}
-
-/*
-export function getChildren(path) {
-    return path.get("children").filter(notEmptyText);
-}
-*/
-/*
-export function getChildNodes(path) {
-    return path.get("children").filter(notEmptyText).map(toNode);
-}
-
-function notEmptyText(path) {
-    return path.isJSXText() ? path.node.value.trim() != "" : true;
-}*/
-
-
-export function toNode(path) {
-    return path.node;
 }

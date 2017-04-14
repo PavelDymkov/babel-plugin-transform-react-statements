@@ -1,7 +1,7 @@
 import {
     combineElements,
     appendExpressions,
-    getChildNodes
+    getChildren
 } from "./common-lib.js";
 
 const t = require("babel-types");
@@ -19,7 +19,7 @@ export default function (path, options) {
     let valueExpression = getValueExpression(node);
     let switchBody = { cases: [], defaultStatement: null };
 
-    node.children.forEach(getCases, {switchBody, options});
+    getChildren(node).forEach(getCases, {switchBody, options});
 
     let argsNames = getArgsNames(switchBody.cases.length);
     let args = getArgs(valueExpression, switchBody.cases);
@@ -71,20 +71,22 @@ function getCases(childNode) {
         let {value: valueSource} = valueAttribute;
 
         let value =
-            valueSource.isJSXExpressionContainer() ?
+            t.isJSXExpressionContainer(valueSource) ?
                 valueSource.expression : valueSource;
 
-        let {children} = childNode;
-        let statement = [t.returnStatement(combineElements(children))];
+        let children = getChildren(childNode);
+        let element = combineElements(children, options);
+        let statement = [t.returnStatement(toCorrectExpression(element))];
 
         switchBody.cases.push({ value, statement });
     }
     else
     if (tagName == "Default") {
-        let {children} = childNode;
+        let children = getChildren(childNode);
+        let element = combineElements(children, options);
 
         switchBody.defaultStatement =
-            t.returnStatement(combineElements(children, options));
+            t.returnStatement(toCorrectExpression(element));
     }
     else {
         throw new Error(errors.INVALID_CHILD_NODE);
@@ -102,6 +104,23 @@ function getValueAttribute(jsxNode) {
     }
 
     return null;
+}
+
+function toCorrectExpression(value) {
+    if (t.isJSXElement(value))
+        return value;
+
+    if (t.isJSXExpressionContainer(value)) {
+        return value.expression;
+    }
+
+    if (t.isJSXEmptyExpression(value)) {
+        return t.nullLiteral();
+    }
+
+    if (t.isJSXText(value)) {
+        return t.stringLiteral(value.value);
+    }
 }
 
 function getJSXElement(element, current) {

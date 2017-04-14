@@ -10,7 +10,11 @@ input = `
 let x = <div>
     <Switch value={x}>
         <Case value={true}>
-                <div>text</div>
+                <If true={true}>
+                    <For in={x}>
+                        <Component />
+                    </For>
+                </If>
         </Case>
     </Switch>
 </div>
