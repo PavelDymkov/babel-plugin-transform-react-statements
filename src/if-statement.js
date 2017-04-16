@@ -1,6 +1,6 @@
 import {
-    appendExpressions,
-    getChildren
+    getChildren,
+    appendExpressions
 } from "./common-lib.js";
 
 const t = require("babel-types");

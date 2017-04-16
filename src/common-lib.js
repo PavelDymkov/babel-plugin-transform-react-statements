@@ -6,39 +6,6 @@ const errors = {
 };
 
 
-export function getTagName(path) {
-    if (!path.isJSXElement())
-        return null;
-
-    let identifier = path.get("openingElement").get("name");
-
-    return identifier.isJSXIdentifier() && identifier.node ? identifier.node.name : null;
-}
-
-
-export function getAttributeName(attribute) {
-    return attribute.get("name").node.name;
-}
-
-
-export function getAttributes(path) {
-    return path.isJSXElement() ? path.get("openingElement").get("attributes") : [];
-}
-
-
-export function getAttribute(path, name) {
-    let attributes = getAttributes(path);
-
-    for (let i = 0, lim = attributes.length; i < lim; i++) {
-        let attribute = attributes[i];
-
-        if (getAttributeName(attribute) == name)
-            return attribute;
-    }
-
-    return null;
-}
-
 export function appendExpressions(expressions, path, options) {
     let parentPath = path.parentPath;
 
@@ -75,7 +42,7 @@ function toJSXExpression(expression) {
 }
 
 
-export function toNode(path) {
+function toNode(path) {
     return path.node;
 }
 
@@ -84,6 +51,10 @@ export function combineElements(elements, options) {
     if (elements.length == 1) return elements[0];
 
     let wrapper = options.wrapper || "<div />";
+
+    if (wrapper == "no-wrap") {
+        return t.arrayExpression(elements.reduce(toJSExpression, []));
+    }
 
     try {
         let {ast} = babel.transform(wrapper, { plugins: ["syntax-jsx"] });
@@ -109,6 +80,26 @@ export function combineElements(elements, options) {
         throw new Error(errors.WRAPPER_PARSE_ERROR);
     }
 }
+
+function toJSExpression(expressions, node) {
+    if (t.isJSXExpressionContainer(node)) {
+        expressions.push(node.expression);
+    }
+    else
+    if (t.isJSXText(node)) {
+        let text = node.value.trim();
+
+        if (text) {
+            expressions.push(t.stringLiteral(text));
+        }
+    }
+    else {
+        expressions.push(node);
+    }
+
+    return expressions;
+}
+
 
 export function getChildren(node) {
     return node.children.reduce(toValidChildNodes, []);

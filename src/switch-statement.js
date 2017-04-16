@@ -1,7 +1,7 @@
 import {
+    getChildren,
     combineElements,
-    appendExpressions,
-    getChildren
+    appendExpressions
 } from "./common-lib.js";
 
 const t = require("babel-types");
@@ -121,6 +121,8 @@ function toCorrectExpression(value) {
     if (t.isJSXText(value)) {
         return t.stringLiteral(value.value);
     }
+
+    return value;
 }
 
 function getJSXElement(element, current) {

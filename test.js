@@ -1,6 +1,6 @@
 const babel = require("babel-core");
 const babelOptions = {
-    plugins: [["transform-react-statements", { wrapper: '<span class="x" data-attr="0" />' }]]
+    plugins: [["transform-react-statements", { wrapper: 'no-wrap' }]]
 };
 
 
@@ -14,11 +14,24 @@ let x = <div>
                     <For in={x}>
                         <Component />
                     </For>
+
+                    <div> text </div>
                 </If>
         </Case>
     </Switch>
 </div>
 `;
+
+/*input = `
+let x = <div>
+    <Switch value={x}>
+        <Case value={true}>
+            <div> text </div>
+            <div> text </div>
+        </Case>
+    </Switch>
+</div>
+`;*/
 
 /*input = `
 let x = <div>

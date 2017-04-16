@@ -1,9 +1,7 @@
 import {
-    getAttributeName,
-    getAttributes,
+    getChildren,
     combineElements,
-    appendExpressions,
-    getChildren
+    appendExpressions
 } from "./common-lib.js";
 
 const t = require("babel-types");
