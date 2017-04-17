@@ -10,12 +10,11 @@ export function appendExpressions(expressions, path, options) {
     let parentPath = path.parentPath;
 
     if (parentPath.isJSXElement()) {
-        let openingElement = parentPath.get("openingElement").node;
-        let closingElement = parentPath.get("closingElement").node;
+        let {node: parentNode} = parentPath;
+        let {openingElement, closingElement, children} = parentNode;
         let isSelfClosing = closingElement == null;
 
         let items = expressions.map(toJSXExpression);
-        let children = parentPath.get("children").map(toNode);
         let index = children.indexOf(path.node);
 
         children.splice(index, 1, ...items);
@@ -39,11 +38,6 @@ export function appendExpressions(expressions, path, options) {
 
 function toJSXExpression(expression) {
     return t.jSXExpressionContainer(expression);
-}
-
-
-function toNode(path) {
-    return path.node;
 }
 
 

@@ -1,6 +1,6 @@
 const babel = require("babel-core");
 const babelOptions = {
-    plugins: [["transform-react-statements", { wrapper: 'no-wrap' }]]
+    plugins: [["transform-react-statements"]] // , { wrapper: 'no-wrap' }
 };
 
 

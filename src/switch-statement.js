@@ -88,9 +88,7 @@ function getCases(childNode) {
         switchBody.defaultStatement =
             t.returnStatement(toCorrectExpression(element));
     }
-    else {
-        throw new Error(errors.INVALID_CHILD_NODE);
-    }
+    else throw new Error(errors.INVALID_CHILD_NODE);
 }
 
 function getValueAttribute(jsxNode) {
@@ -123,14 +121,6 @@ function toCorrectExpression(value) {
     }
 
     return value;
-}
-
-function getJSXElement(element, current) {
-    if (element) return element;
-
-    let isCorrectType = current.isJSXElement() || current.isJSXExpressionContainer();
-
-    return isCorrectType ? current.node : null;
 }
 
 function toSwitchCase({statement}, index) {
