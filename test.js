@@ -5,7 +5,16 @@ const babelOptions = {
 
 
 let input;
+input = `
+let x =                
+    <Switch value={x}>
+        <Case value={true}>
+            <Component />
+        </Case>
+    </Switch>
+`;
 
+/*
 input = `
 let x = <div>
     <Switch value={x}>
@@ -20,7 +29,7 @@ let x = <div>
         </Case>
     </Switch>
 </div>
-`;
+`;*/
 
 /*input = `
 let x = <div>
