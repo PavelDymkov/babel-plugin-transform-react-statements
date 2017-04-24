@@ -1,5 +1,7 @@
 import {
     getChildren,
+    combineElements,
+    wrapElement,
     appendExpressions
 } from "./common-lib.js";
 
@@ -39,20 +41,34 @@ export default function (path, options) {
 
     let expressions = getChildren(node).map(toExpression, conditionExpression);
 
+    if (expressions.length == 1 && !path.parentPath.isJSXElement()) {
+        let {right: element} = expressions[0];
+
+        if (!t.isJSXElement(element)) {
+            let wrapper = options.wrapper || "<span />";
+
+            if (wrapper.trim()[0] == "<") {
+                expressions = [t.logicalExpression("&&", conditionExpression, wrapElement(element, wrapper))];
+            }
+        }
+    }
+
     appendExpressions(expressions, path, options);
 
 }
 
 function toExpression(node) {
+    let conditionExpression = this;
+
     if (t.isJSXElement(node)) {
-        return t.logicalExpression("&&", this, node);
+        return t.logicalExpression("&&", conditionExpression, node);
     }
 
     if (t.isJSXExpressionContainer(node)) {
-        return t.logicalExpression("&&", this, node.expression);
+        return t.logicalExpression("&&", conditionExpression, node.expression);
     }
 
     if (t.isJSXText(node)) {
-        return t.logicalExpression("&&", this, t.stringLiteral(node.value));
+        return t.logicalExpression("&&", conditionExpression, t.stringLiteral(node.value));
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-transform-react-statements",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Transform React statements",
   "main": "lib/index.js",
   "scripts": {
@@ -14,19 +14,26 @@
     "url": "https://github.com/PavelDymkov/babel-plugin-transform-react-statements.git"
   },
   "keywords": [
-    "react", "statement", "for", "if", "jsx"
+    "react",
+    "statement",
+    "for",
+    "if",
+    "jsx"
   ],
   "author": "Pavel Dymkov <dymkov86@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.23.0",
-    "babel-preset-es2015": "^6.22.0",
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
     "chai": "^3.5.0",
     "mocha": "^3.2.0"
   },
   "dependencies": {
-    "babel-core": "^6.23.1",
+    "babel-core": "^6.24.1",
     "babel-plugin-syntax-jsx": "^6.18.0",
-    "babel-types": "^6.23.0"
+    "babel-traverse": "^6.24.1",
+    "babel-types": "^6.24.1",
+    "babylon": "^6.17.0"
   }
 }

@@ -5,7 +5,7 @@ const isEquil = require("./tools");
 describe("Switch statement", () => {
     it("should transform simple case", () => {
         let input = `
-            props => <div>
+            <div>
                 <Switch value={x}>
                     <Case value={1}>
                         <div> Text 1 </div>
@@ -20,9 +20,7 @@ describe("Switch statement", () => {
             </div>;
         `;
         let output = `
-            var _this = this;
-
-            props => <div>
+            <div>
                 {
                     function (value, case1, case2) {
                         switch (value) {
@@ -34,7 +32,7 @@ describe("Switch statement", () => {
                         }
 
                         return <div> default </div>;
-                    }.call(_this, x, 1, "lol")
+                    }.call(this, x, 1, "lol")
                 }
             </div>;
         `;

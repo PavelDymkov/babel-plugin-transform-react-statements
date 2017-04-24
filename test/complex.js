@@ -60,13 +60,13 @@ describe("Complex tests", () => {
                                 return !false && <div> Text 1 </div>;
 
                             case case2:
-                                return Array.prototype.map.call(some, function (x) {
-                                    return <div> {x} </div>;
-                                }, this);
+                                return <span>{Array.prototype.map.call(some, function (x) {
+                                        return <div> {x} </div>;
+                                    }, this)}</span>;
                         }
                     }.call(_this, x, 1, 2)
                 }
-</div>;
+            </div>;
         `;
 
         assert.isTrue(isEquil(input, output));

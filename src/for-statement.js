@@ -1,6 +1,7 @@
 import {
     getChildren,
     combineElements,
+    wrapElement,
     appendExpressions
 } from "./common-lib.js";
 
@@ -72,6 +73,16 @@ export default function (path, options) {
     let fn = t.functionExpression(null, argNames, body);
 
     let expressions = [createArrayMapCallExpression(fn, parameters)];
+
+    if (!path.parentPath.isJSXElement()) {
+        let wrapper = options.wrapper || "<span />";
+
+        if (wrapper.trim()[0] == "<") {
+            let [expression] = expressions;
+
+            expressions = [wrapElement(expression, wrapper)];
+        }
+    }
 
     appendExpressions(expressions, path, options);
 };

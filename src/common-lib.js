@@ -2,7 +2,9 @@ const babel = require("babel-core");
 const t = require("babel-types");
 
 const errors = {
-    WRAPPER_PARSE_ERROR: "WRAPPER_PARSE_ERROR"
+    WRAPPER_PARSE_ERROR: "WRAPPER_PARSE_ERROR",
+    NO_WRAP_ERROR: "NO_WRAP_ERROR",
+    WRAP_INVALID_TYPE: "WRAP_INVALID_TYPE"
 };
 
 
@@ -42,11 +44,16 @@ function toJSXExpression(expression) {
 
 
 export function combineElements(elements, options) {
+    if (options.wrapper == "no-wrap") {
+        if (elements.length != 1)
+            throw new Error(errors.NO_WRAP_ERROR);
+    }
+
     if (elements.length == 1) return elements[0];
 
-    let wrapper = options.wrapper || "<div />";
+    let wrapper = options.wrapper || "<span />";
 
-    if (wrapper == "no-wrap") {
+    if (wrapper == "array-supported") {
         return t.arrayExpression(elements.reduce(toJSExpression, []));
     }
 
@@ -92,6 +99,56 @@ function toJSExpression(expressions, node) {
     }
 
     return expressions;
+}
+
+
+export function wrapElement(element, wrapper) {
+    if (t.isJSXElement(element))
+        return element;
+
+    let childNode = null;
+
+    if (isValidChildNode(element)) {
+        childNode = element;
+    } else {
+        try {
+            childNode = t.jSXExpressionContainer(element);
+        } catch (error) {
+            throw new Error(errors.WRAP_INVALID_TYPE);
+        }
+    }
+
+    try {
+        let {ast} = babel.transform(wrapper, { plugins: ["syntax-jsx"] });
+        let [expressionStatement] = ast.program.body;
+
+        if (!t.isExpressionStatement(expressionStatement))
+            throw null;
+
+        let wrapperASTSource = expressionStatement.expression;
+
+        if (!t.isJSXElement(wrapperASTSource))
+            throw null;
+
+        let openingElementSource = wrapperASTSource.openingElement;
+        let { name: tagIdentifier, attributes } = openingElementSource;
+
+        let openingElement = t.jSXOpeningElement(tagIdentifier, attributes);
+        let closingElement = t.jSXClosingElement(tagIdentifier);
+
+        return t.jSXElement(openingElement, closingElement, [childNode], false);
+    } catch (error) {
+        throw new Error(errors.WRAPPER_PARSE_ERROR);
+    }
+}
+
+function isValidChildNode(node) {
+    return t.isJSXElement(node) ||
+        t.isJSXEmptyExpression(node) ||
+        t.isJSXExpressionContainer(node) ||
+        t.isJSXSpreadChild(node) ||
+        t.isJSXText(node);
+
 }
 
 

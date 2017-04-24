@@ -1,17 +1,17 @@
 const babel = require("babel-core");
 const babelOptions = {
-    plugins: [["transform-react-statements"]] // , { wrapper: 'no-wrap' }
+    plugins: [["transform-react-statements"]], // , { wrapper: 'no-wrap' }
+    presets: ["es2015", "react"]
 };
 
 
 let input;
 input = `
-let x =                
-    <Switch value={x}>
-        <Case value={true}>
-            <Component />
-        </Case>
-    </Switch>
+const Element = <div>
+        <If true={true}>
+            <div data-x="x">1</div>
+        </If>
+    </div>;
 `;
 
 /*

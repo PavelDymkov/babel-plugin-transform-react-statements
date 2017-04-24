@@ -5,20 +5,18 @@ const isEquil = require("./tools");
 describe("For statement", () => {
     it("should transform with \"in\" attribute", () => {
         let input = `
-            props => <div>
+            <div>
                 <For each="item" in={array}>
                     <div>{ item }</div>
                 </For>
             </div>;
         `;
         let output = `
-            var _this = this;
-
-            props => <div>
+            <div>
                 {
                     Array.prototype.map.call(array, function (item) {
                         return <div>{item}</div>;
-                    }, _this)
+                    }, this)
                 }
             </div>;
         `;
@@ -28,20 +26,18 @@ describe("For statement", () => {
 
     it("should transform without \"in\" attribute", () => {
         let input = `
-            props => <div>
+            <div>
                 <For in={array}>
                     <div> text </div>
                 </For>
             </div>;
         `;
         let output = `
-            var _this = this;
-
-            props => <div>
+            <div>
                 {
                     Array.prototype.map.call(array, function (value) {
                         return <div {...value}> text </div>;
-                    }, _this)
+                    }, this)
                 }
             </div>;
         `;
@@ -51,7 +47,7 @@ describe("For statement", () => {
 
     it("should transform loop in loop", () => {
         let input = `
-            props => <div>
+            <div>
                 <For each="item" in={array}>
                     <For in={item}>
                         <div> text </div>
@@ -60,15 +56,17 @@ describe("For statement", () => {
             </div>;
         `;
         let output = `
-            var _this = this;
-
-            props => <div>
+            <div>
                 {
                     Array.prototype.map.call(array, function (item) {
-                        return Array.prototype.map.call(item, function (value) {
-                            return <div {...value}> text </div>;
-                        }, this);
-                    }, _this)
+                        return <span>
+                            {
+                                Array.prototype.map.call(item, function (value) {
+                                    return <div {...value}> text </div>;
+                                }, this)
+                            }
+                        </span>;
+                    }, this)
                 }
             </div>;
         `;
@@ -78,20 +76,18 @@ describe("For statement", () => {
 
     it("should transform key-is without each", () => {
         let input = `
-            props => <div>
+            <div>
                 <For in={array} key-is="id">
                     <div />
                 </For>
             </div>;
         `;
         let output = `
-            var _this = this;
-
-            props => <div>
+            <div>
                 {
                     Array.prototype.map.call(array, function (value) {
                         return <div key={value.id} {...value} />;
-                    }, _this)
+                    }, this)
                 }
             </div>;
         `;
@@ -101,20 +97,18 @@ describe("For statement", () => {
 
     it("should transform key-is with each", () => {
         let input = `
-            props => <div>
+            <div>
                 <For each="item" in={array} key-is="id">
                     <div>{ item.value }</div>
                 </For>
             </div>;
         `;
         let output = `
-            var _this = this;
-
-            props => <div>
+            <div>
                 {
                     Array.prototype.map.call(array, function (item) {
                         return <div key={item.id}>{item.value}</div>;
-                    }, _this)
+                    }, this)
                 }
             </div>;
         `;
