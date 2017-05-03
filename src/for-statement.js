@@ -20,7 +20,7 @@ export default function (path, options) {
     let parameters = {
         itemIdentifier: null,
         iterableExpression: null,
-        keyIs: null
+        keyIs: options.keyIs || null
     };
 
     let {node} = path;

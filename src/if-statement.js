@@ -68,6 +68,10 @@ function toExpression(node) {
         return t.logicalExpression("&&", conditionExpression, node.expression);
     }
 
+    if (t.isJSXEmptyExpression(node)) {
+        return t.logicalExpression("&&", this, t.nullLiteral());
+    }
+
     if (t.isJSXText(node)) {
         return t.logicalExpression("&&", conditionExpression, t.stringLiteral(node.value));
     }
