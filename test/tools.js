@@ -12,9 +12,5 @@ module.exports = function isEquil(input, expected, options) {
 
     let output = babel.transform(input, babelOptions).code;
 
-    if (output.replace(spaces, "") != expected.replace(spaces, "")) {
-    	console.log(output)
-    }
-
     return output.replace(spaces, "") == expected.replace(spaces, "");
 };
