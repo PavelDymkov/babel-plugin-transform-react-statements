@@ -7,11 +7,9 @@ const babelOptions = {
 
 let input;
 input = `
-const Element = <div>
-        <If true={true}>
-            <div data-x="x">1</div>
-        </If>
-    </div>;
+<Component props="item">
+    { "asd" }
+</Component>;
 `;
 
 /*

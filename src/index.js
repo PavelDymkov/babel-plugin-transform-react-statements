@@ -1,6 +1,7 @@
 import transformIfStatement from "./if-statement.js";
 import transformForStatement from "./for-statement.js";
 import transformSwitchStatement from "./switch-statement.js";
+import transformComponentStatement from "./component-statement.js";
 
 const babel = require("babel-core");
 
@@ -16,7 +17,7 @@ function createPlugin(options) {
             visitor: {
                 JSXElement: {
                     enter(path) {
-                        let tagName = getTagName(path);
+                        let tagName = getTagName(path, options);
 
                         switch (tagName) {
                             case "For":
@@ -26,11 +27,14 @@ function createPlugin(options) {
                             case "Switch":
                                 transformSwitchStatement(path, options);
                                 break;
+
+                            case "Component":
+                                transformComponentStatement(path, options);
                         }
                     },
 
                     exit(path) {
-                        let tagName = getTagName(path);
+                        let tagName = getTagName(path, options);
 
                         switch (tagName) {
                             case "If":
@@ -67,10 +71,20 @@ export default function() {
 }
 
 
-function getTagName(path) {
-    let identifier = path.get("openingElement").get("name");
+function getTagName({node: element}, {disabled, rename}) {
+    let {name} = element.openingElement.name;
 
-    return identifier.isJSXIdentifier() && identifier.node ? identifier.node.name : null;
+    if (Array.isArray(disabled) && disabled.some(item => item == name))
+        return null;
+
+    for (let originName in rename) {
+        let alias = rename[originName];
+
+        if (alias == name)
+            return originName;
+    }
+
+    return name;
 }
 
 function checkTransformComplete(path) {

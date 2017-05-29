@@ -1,6 +1,5 @@
 import {
     getChildren,
-    combineElements,
     wrapElement,
     appendExpressions
 } from "./common-lib.js";
@@ -54,7 +53,6 @@ export default function (path, options) {
     }
 
     appendExpressions(expressions, path, options);
-
 }
 
 function toExpression(node) {
