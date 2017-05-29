@@ -13,9 +13,17 @@ export default function (path, options) {
     let propsIdentifier = node.openingElement.attributes.reduce(toPropsIdentifier, t.identifier("props"));
 
     let params = [propsIdentifier];
-    let body = combineElements(getChildren(node), options);
+    let expression = combineElements(getChildren(node), options);
 
-    let arrayFunction = t.arrowFunctionExpression(params, body);
+    if (t.isJSXText(expression)) {
+        expression = t.stringLiteral(expression.value);
+    }
+    else
+    if (t.isJSXExpressionContainer(expression)) {
+        expression = expression.expression;
+    }
+
+    let arrayFunction = t.arrowFunctionExpression(params, expression);
 
     appendExpressions([arrayFunction], path, options);
 }

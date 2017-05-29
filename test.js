@@ -8,7 +8,7 @@ const babelOptions = {
 let input;
 input = `
 <Component props="item">
-    { "asd" }
+    <div {...item} />
 </Component>;
 `;
 
