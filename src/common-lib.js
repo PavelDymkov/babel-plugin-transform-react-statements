@@ -2,8 +2,8 @@ const babel = require("babel-core");
 const t = require("babel-types");
 
 const errors = {
-    WRAPPER_PARSE_ERROR: "WRAPPER_PARSE_ERROR",
-    NO_WRAP_ERROR: "NO_WRAP_ERROR",
+    WRAPPER_PARSE_ERROR: "incorrect \"wrapper\" parameter",
+    NO_WRAP_ERROR: "elements must be wrapped in React.Component",
     WRAP_INVALID_TYPE: "WRAP_INVALID_TYPE"
 };
 

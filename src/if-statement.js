@@ -7,10 +7,10 @@ import {
 const t = require("babel-types");
 
 const errors = {
-    ATTRIBUTES_LENGTH: "IF__ATTRIBUTES_LENGTH",
-    INVALID_ATTRIBUTE_NAME: "IF__INVALID_ATTRIBUTE_NAME",
-    INVALID_ATTRIBUTE_VALUE: "IF__INVALID_ATTRIBUTE_VALUE",
-    CHILD_MUST_BE_JSX_ELEMENT: "IF__CHILD_MUST_BE_JSX_ELEMENT"
+    ATTRIBUTES_LENGTH: "statement must have only one attribute",
+    INVALID_ATTRIBUTE_NAME: "incorrect attribute name",
+    INVALID_ATTRIBUTE_VALUE: "incorrect attribute value",
+    CHILD_MUST_BE_JSX_ELEMENT: "child must be as JSX Element"
 };
 
 

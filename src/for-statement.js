@@ -8,7 +8,7 @@ import {
 const t = require("babel-types");
 
 const errors = {
-    IN_ATTR_MISSING: "IN_ATTR_MISSING",
+    IN_ATTR_MISSING: "\"in\" attribute is missing",
     CHILD_MUST_BE_AN_ELEMENT: "CHILD_MUST_BE_AN_ELEMENT",
     EACH_ATTR_NOT_STRING: "EACH_ATTR_NOT_STRING",
     IN_ATTR_NOT_EXPRESSION: "IN_ATTR_NOT_EXPRESSION",
