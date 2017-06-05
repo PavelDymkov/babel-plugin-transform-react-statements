@@ -100,7 +100,7 @@ npm install --save-dev babel-plugin-transform-react-statements
 ```jsx
 <If false={props.hidden}>
     <div> Text </div>
-</For>
+</If>
 ```
 
 
