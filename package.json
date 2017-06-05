@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-transform-react-statements",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Transform React statements",
   "main": "lib/index.js",
   "scripts": {
