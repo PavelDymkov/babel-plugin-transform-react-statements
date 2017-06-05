@@ -7,7 +7,7 @@
 
 **in**
 
-```jsx harmony
+```jsx
 <div>
     <Switch value={props.current}>
         <Case value="foo">
@@ -33,7 +33,7 @@
 
 **out**
 
-```jsx harmony
+```jsx
 <div>
     {function (value, case1, case2) {
         switch (value) {
@@ -57,11 +57,11 @@
 
 # Table of Contents
 
-* [Installation](#Installation)
-* [For](#For)
-* [If](#If)
-* [Switch](#Switch)
-* [Component](#Component)
+* [Installation](#installation)
+* [For](#for)
+* [If](#if)
+* [Switch](#switch)
+* [Component](#component)
 
 
 # Installation
@@ -69,6 +69,7 @@
 ```sh
 npm install --save-dev babel-plugin-transform-react-statements
 ```
+
 
 # For
 
@@ -81,17 +82,26 @@ npm install --save-dev babel-plugin-transform-react-statements
 
 ### Example:
 
-```jsx harmony
+```jsx
 <For each="item" in={props.items}>
     <div key={item.id}>{ item.text }</div>
 </For>
 ```
+
 
 # If
 
 ### Attributes:
 
 * **true/false** _(expression)_ - condition statement.
+
+### Example:
+
+```jsx
+<If false={props.hidden}>
+    <div> Text </div>
+</For>
+```
 
 
 # Switch
@@ -119,6 +129,7 @@ npm install --save-dev babel-plugin-transform-react-statements
 </Switch>
 ```
 
+
 # Component
 
 ### Attributes:
@@ -140,3 +151,4 @@ npm install --save-dev babel-plugin-transform-react-statements
 ```jsx harmony
 item => <div> Item: <span>{item.name}</span> </div>;
 ```
+
