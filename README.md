@@ -76,16 +76,26 @@ npm install --save-dev babel-plugin-transform-react-statements
 ### Attributes:
 
 * **in** _(expression)_ - iterable object.
-* **each** _(string)_ - variable name for each items of iterable object.
+* **each** _(string)_ - variable name for each items of iterable object. Not mandatory.
 * **counter** _(string)_ - the name of index variable. By default, index.
-* **key-is** _(string)_ - the name of the property that stores the unique identifier of the element.
+* **key-is** _(string)_ - the name of the property that stores the unique identifier of the element. Not required.
 
 ### Example:
 
+**in**
+
 ```jsx
-<For each="item" in={props.items}>
-    <div key={item.id}>{ item.text }</div>
+<For in={props.items} key-is="id">
+    <Item />
 </For>
+```
+
+**out**
+
+```jsx
+<span>{Array.prototype.map.call(props.items, function (value, index) {
+    return <Item key={value.id} {...value} />;
+}, this)}</span>;
 ```
 
 
@@ -117,7 +127,7 @@ npm install --save-dev babel-plugin-transform-react-statements
 
 ### Example:
 
-```jsx harmony
+```jsx
 <Switch value={props.axle}>
     <Case value="x">
         <div> X </div>
@@ -140,7 +150,7 @@ npm install --save-dev babel-plugin-transform-react-statements
 
 **in**
 
-```jsx harmony
+```jsx
 <Component props="item">
     <div> Item: <span>{item.name}</span> </div>
 </Component>
@@ -148,7 +158,7 @@ npm install --save-dev babel-plugin-transform-react-statements
 
 **out**
 
-```jsx harmony
+```jsx
 item => <div> Item: <span>{item.name}</span> </div>;
 ```
 
