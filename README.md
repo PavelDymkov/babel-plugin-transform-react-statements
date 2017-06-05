@@ -81,7 +81,7 @@ npm install --save-dev babel-plugin-transform-react-statements
 
 ### Example:
 
-```jsx
+```jsx harmony
 <For each="item" in={props.items}>
     <div key={item.id}>{ item.text }</div>
 </For>
