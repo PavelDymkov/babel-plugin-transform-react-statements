@@ -39,7 +39,7 @@ export default function (path, options) {
     let argNames = [itemIdentifier, t.identifier(parameters.counter)];
 
     if (t.isJSXElement(iterableElement)) {
-        if (parameters.keyIs) {
+        if (parameters.keyIs && iterableElement.openingElement.attributes.every(hasNotKeyAttribure)) {
             let attributeName = t.jSXIdentifier("key");
             let attributeValue = t.memberExpression(itemIdentifier, t.identifier(parameters.keyIs));
             let attribute = t.jSXAttribute(attributeName, t.jSXExpressionContainer(attributeValue));
@@ -89,6 +89,10 @@ export default function (path, options) {
     appendExpressions(expressions, path, options);
 };
 
+
+function hasNotKeyAttribure(attribute) {
+    return attribute.name.name != "key";
+}
 
 function createArrayMapCallExpression(fn, parameters) {
     let callee = "Array.prototype.map.call"
