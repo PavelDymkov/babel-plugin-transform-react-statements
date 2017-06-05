@@ -76,7 +76,7 @@ npm install --save-dev babel-plugin-transform-react-statements
 ### Attributes:
 
 * **in** _(expression)_ - iterable object.
-* **each** _(string)_ - variable name for each items of iterable object. By default, value.
+* **each** _(string)_ - variable name for each items of iterable object.
 * **counter** _(string)_ - the name of index variable. By default, index.
 * **key-is** _(string)_ - the name of the property that stores the unique identifier of the element.
 
