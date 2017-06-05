@@ -14,7 +14,7 @@ describe("For statement", () => {
         let output = `
             <div>
                 {
-                    Array.prototype.map.call(array, function (item) {
+                    Array.prototype.map.call(array, function (item, index) {
                         return <div>{item}</div>;
                     }, this)
                 }
@@ -35,7 +35,7 @@ describe("For statement", () => {
         let output = `
             <div>
                 {
-                    Array.prototype.map.call(array, function (value) {
+                    Array.prototype.map.call(array, function (value, index) {
                         return <div {...value}> text </div>;
                     }, this)
                 }
@@ -58,10 +58,10 @@ describe("For statement", () => {
         let output = `
             <div>
                 {
-                    Array.prototype.map.call(array, function (item) {
+                    Array.prototype.map.call(array, function (item, index) {
                         return <span>
                             {
-                                Array.prototype.map.call(item, function (value) {
+                                Array.prototype.map.call(item, function (value, index) {
                                     return <div {...value}> text </div>;
                                 }, this)
                             }
@@ -85,7 +85,7 @@ describe("For statement", () => {
         let output = `
             <div>
                 {
-                    Array.prototype.map.call(array, function (value) {
+                    Array.prototype.map.call(array, function (value, index) {
                         return <div key={value.id} {...value} />;
                     }, this)
                 }
@@ -106,10 +106,29 @@ describe("For statement", () => {
         let output = `
             <div>
                 {
-                    Array.prototype.map.call(array, function (item) {
+                    Array.prototype.map.call(array, function (item, index) {
                         return <div key={item.id}>{item.value}</div>;
                     }, this)
                 }
+            </div>;
+        `;
+
+        assert.isTrue(isEquil(input, output));
+    });
+
+    it("should change counter name", () => {
+        let input = `
+            <div>
+                <For in={x} counter="idx">
+                    <div key={idx} />
+                </For>
+            </div>;
+        `;
+        let output = `
+            <div>
+                {Array.prototype.map.call(x, function (value, idx) {
+                    return <div key={idx} {...value} />;
+                }, this)}
             </div>;
         `;
 

@@ -53,7 +53,7 @@ describe("Combining child node tests: ", () => {
         let output = `
             <p>
                 {
-                    Array.prototype.map.call(list, function (item) {
+                    Array.prototype.map.call(list, function (item, index) {
                         return <span>
                             {1 && <div> foo </div>}
                             {1 && <div> bar </div>}
@@ -79,7 +79,7 @@ describe("Combining child node tests: ", () => {
         let output = `
             <span class="x" data-attr="0">
                 {
-                    Array.prototype.map.call(array, function (item) {
+                    Array.prototype.map.call(array, function (item, index) {
                         return <span class="x" data-attr="0">
                             <div> foo </div>
                             <div> bar </div>
@@ -122,7 +122,7 @@ describe("Combining child node tests: ", () => {
                     case case1:
                         return <span>
                             {
-                                Array.prototype.map.call(list, function (item) {
+                                Array.prototype.map.call(list, function (item, index) {
                                     return <span>
                                         {1 && <div> foo </div>}
                                         {1 && <div> bar </div>}
@@ -136,7 +136,7 @@ describe("Combining child node tests: ", () => {
                             <div> text </div>
 
                             {
-                                Array.prototype.map.call(list, function (item) {
+                                Array.prototype.map.call(list, function (item, index) {
                                     return <span>
                                         {1 && <div> foo </div>}
                                         {1 && <div> bar </div>}
@@ -163,7 +163,7 @@ describe("Combining child node tests: ", () => {
         let output = `
             <span>
                 {
-                    Array.prototype.map.call(list, function (item) {
+                    Array.prototype.map.call(list, function (item, index) {
                         return <span>
                             {1 && <div> foo </div>}
                             {1 && <div> bar </div>}

@@ -60,7 +60,7 @@ describe("Complex tests", () => {
                                 return !false && <div> Text 1 </div>;
 
                             case case2:
-                                return <span>{Array.prototype.map.call(some, function (x) {
+                                return <span>{Array.prototype.map.call(some, function (x, index) {
                                         return <div> {x} </div>;
                                     }, this)}</span>;
                         }

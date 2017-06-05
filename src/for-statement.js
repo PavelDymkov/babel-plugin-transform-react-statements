@@ -12,6 +12,7 @@ const errors = {
     CHILD_MUST_BE_AN_ELEMENT: "CHILD_MUST_BE_AN_ELEMENT",
     EACH_ATTR_NOT_STRING: "EACH_ATTR_NOT_STRING",
     IN_ATTR_NOT_EXPRESSION: "IN_ATTR_NOT_EXPRESSION",
+    COUNTER_ATTR_NOT_STRING: "COUNTER_ATTR_NOT_STRING",
     KEY_ATTR_NOT_STRING: "KEY_ATTR_NOT_STRING"
 };
 
@@ -20,6 +21,7 @@ export default function (path, options) {
     let parameters = {
         itemIdentifier: null,
         iterableExpression: null,
+        counter: "index",
         keyIs: options.keyIs || null
     };
 
@@ -34,7 +36,7 @@ export default function (path, options) {
     let iterableElement = combineElements(getChildren(node), options);
 
     let itemIdentifier = t.identifier(parameters.itemIdentifier || "value");
-    let argNames = [itemIdentifier];
+    let argNames = [itemIdentifier, t.identifier(parameters.counter)];
 
     if (t.isJSXElement(iterableElement)) {
         if (parameters.keyIs) {
@@ -118,8 +120,13 @@ function setParameters(attribute) {
             this.iterableExpression = getIterableExpression(attribute);
             break;
 
+        case "counter":
+            this.counter = getCounterValue(attribute);
+            break;
+
         case "key-is":
             this.keyIs = getKeyValue(attribute);
+            break;
     }
 }
 
@@ -135,6 +142,13 @@ function getIterableExpression({value: valueNode}) {
         throw new Error(errors.IN_ATTR_NOT_EXPRESSION);
 
     return valueNode.expression;
+}
+
+function getCounterValue({value: valueNode}) {
+    if (!t.isStringLiteral(valueNode))
+        throw new Error(errors.COUNTER_ATTR_NOT_STRING);
+
+    return valueNode.value;
 }
 
 function getKeyValue({value: valueNode}) {

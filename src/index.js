@@ -30,6 +30,7 @@ function createPlugin(options) {
 
                             case "Component":
                                 transformComponentStatement(path, options);
+                                break;
                         }
                     },
 
