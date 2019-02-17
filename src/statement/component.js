@@ -1,10 +1,10 @@
 import { types as t } from "@babel/core";
+import not from "not-value";
 import manipulateOptions from "../helper/manipulate-options";
 import getComponentName from "../helper/get-component-name";
 import statementChildrenToExpression from "../helper/statement-children-to-expression";
 import replace from "../helper/replace-statement";
 import throwIf from "../helper/throw-if";
-import not from "../helper/not";
 
 
 const Error = {
