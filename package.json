@@ -26,7 +26,7 @@
   "license": "MIT",
   "dependencies": {
     "@babel/core": "^7.1.6",
-    "not-value": "^1.0.0"
+    "logical-not": "^1.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.5",

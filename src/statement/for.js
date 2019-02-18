@@ -1,5 +1,5 @@
 import { types as t } from "@babel/core";
-import not from "not-value";
+import not from "logical-not";
 import manipulateOptions from "../helper/manipulate-options";
 import getComponentName from "../helper/get-component-name";
 import toExpression from "../helper/statement-children-to-expression";
